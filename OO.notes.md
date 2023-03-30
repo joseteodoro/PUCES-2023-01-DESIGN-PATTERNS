@@ -4,19 +4,13 @@ bases da orientação a objetos
 
 dados + comportamento
 
+// dados
+user.c
+
 const int typeAdmin = 0;
 const int typeGuest = 1;
 const int typeCustomer = 2;
 
-[
-    us0,
-    us1,
-    us2,
-    us3,
-]
-
-// dados
-user.cpp
 struct user {
     int id;
     char[] name;
@@ -27,6 +21,119 @@ struct user {
 }
 
 //comportamento
+user_management.c
+free function:
+function save(*user us) {}
+
+function add(*user us) {};
+
+function delete(*user us) {};
+
+function adminLogin(*user us) {
+
+}
+function guestLogin(*user us) {
+
+}
+function customerLogin(*user us) {
+
+}
+
+// com O.O.
+public void save(User us) {
+	persister.save(us)
+}
+
+function login(username, password, type) {
+		
+    // Abstraction
+    // Polymorphism
+    // Encapsulation
+    // Inheritance ... types
+    
+    Factory f = UserFactory.for(type);
+    UserGuest us = f.login(username, password);
+    
+    User login(string username, string password);
+    
+    user.uploadXML() ts, net, java
+    
+    python, js e go. type duckying
+    user.uploadXML()
+    
+    
+    validUsers("jose")
+    validUsers("jose", "joao", )
+    
+    long getId()
+    string getUsername()
+    
+    if ("" != type) {
+        // guest pointer
+    }
+    else if (typeAdmin == type) {
+        // admin pointer
+    }
+    else if (typeCustomer == type) {
+        // customer pointer
+    }
+    else if (typeGuest == type) {
+        // guest pointer
+    }
+
+
+    // what if us.login()?
+}
+
+function login(request req) {
+    *user us = userFrom(req)
+    us.login()
+
+    int type = getUserType(req)
+    if (guest) {
+        return guestLogin()
+    }
+    if (admin) {
+        return adminLogin()
+    }
+    if (customer) {
+        return customerLogin()
+    }
+
+    ..
+    ..
+    ..
+}
+
+
+
+==== paramos aqui
+
+bases da orientação a objetos
+
+=============================
+
+dados + comportamento
+
+// dados
+user.c
+
+const int typeAdmin = 0;
+const int typeGuest = 1;
+const int typeCustomer = 2;
+
+struct user {
+    int id;
+    char[] name;
+    int type;
+    int role;
+    int permission;
+    *add;
+}
+
+
+//comportamento
+user_management.c
 function add(*user us) {};
 
 function delete(*user us) {};
@@ -43,14 +150,16 @@ function customerLogin(*user us) {
 
 function genericLogin(*user us) {
     if (typeAdmin) {
-
+        // admin pointer
     }
     else if (typeCustomer) {
-
+        // customer pointer
     }
     else if (typeGuest) {
-
+        // guest pointer
     }
+
+    // what if us.login()?
 }
 
 function login(request req) {
