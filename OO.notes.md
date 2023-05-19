@@ -873,3 +873,158 @@ class LabelPrinter:
 ```
 
 ### Singleton - criacional
+
+```java
+//controller <-- rotas API
+OrderController.class
+//
+Order o1 = req.getOrder()
+
+OrderService.class
+//service <-- regras de negocio (nao eh view e nao é banco)
+// coordene sua execucao aqui
+//repository [precisa de ORM] (Data Access Object) <--- dados >
+
+OrderRepository.class
+// repo
+public interface OrderRepository extends JPARepository<Order> {
+    public void save(Order o1);
+}
+
+Order o1 -> controller.save(o1) -> service.save(o1) -> ... -> repository.save(o1) -> db
+
+public interface UserRepository extends JPARepository<User> {
+    public List<User> findByUsername(String username);
+}
+
+public interface MessageRepository extends JPARepository<Message> {
+    public List<Message> allMessages();
+}
+
+public interface FilterMessageRepository extends JPARepository<Message> {
+    public default List<Message> allMessages( {
+        UserRepository
+        MessageRepository
+    }
+}
+//query, projeta como resultado do tipo User
+// `select * from User where username = :username`
+
+DAO ----> repository
+DAO <-//- repository
+
+```
+
+
+```java
+
+public class PrinterConfiguration {
+
+    private String defaultPrinterName;
+
+    private Long printerResolution;
+
+    //...
+
+    private static PrinterConfiguration instancia = null;
+
+    private PrinterConfiguration() {
+        loadFromIniFile("~/print.ini")
+    }
+
+    // on demand
+    // eager
+    // thread safe
+    // unsafe
+    public static PrinterConfiguration getInstancia() {
+        if (instancia == null) { // unsafe e on demand
+            instancia = new PrinterConfiguration();
+        }
+        return instancia;
+    }
+
+}
+
+// usage
+var config1 = PrinterConfiguration.getInstancia();
+var config2 = PrinterConfiguration.getInstancia();
+
+//true
+(config1 == config2)
+
+public class OrderService {
+
+    private DBConnection connection = new Connection();
+
+    public void save(Order o1) {
+        connection = new Connection()
+        // fazer qualquer coisa
+        // connection.save() //final
+        /// connection.save(o1);
+    }
+
+    public void validate(Order o1) {
+        connection = new Connection()
+        /// connection.save(o1);
+    }
+}
+
+//spring (singleton)
+public class OrderController {
+    
+    private OrderService service;
+
+    public void save(Order o1) {
+        //
+        service.validate(o1)
+        service.save(o1)
+    }
+
+}
+
+
+
+```
+
+#### Singleton - Basico
+
+#### Singleton - Thread Safe
+
+#### Singleton - Lazy
+
+#### Singleton - Eager
+
+### Strategy - comportamental
+
+### Template Method - comportamental
+
+### Strategy vs Template Method
+
+### Adapter (Wrapper) - estrutural
+
+### Proxy - estrutural
+
+### Decorator (for behavior) - estrutural
+
+### Adapter vs Decorator vs Proxy
+
+### Behavioral Patterns / Iterator | what about Generator?
+
+### Creational Patterns / Builder
+
+### Creational Patterns / Copy on constructor
+
+### Creational Patterns / Prototype
+
+### Prototype vs Builder
+
+### Creational Patterns / Flyweight
+
+### Creational Patterns / Object pool
+
+### Prototype vs Object Pool vs Flyweight
+
+### Behavioral Patterns / Command
+
+
+### and more
