@@ -766,6 +766,7 @@ Boas praticas de codigo:
 ## Design Patterns
 
 
+// esconder complexidade / SRP
 ### Factory - criacional
 
 ```python
@@ -936,7 +937,25 @@ public class PrinterConfiguration {
     // eager
     // thread safe
     // unsafe
+    // economiza tempo de carga, ou economia espaco em memoria (economia de recursos)
     public static PrinterConfiguration getInstancia() {
+        if (instancia == null) { // unsafe e on demand
+            instancia = new PrinterConfiguration();
+        }
+        return instancia;
+    }
+
+    //eager e thread safe
+    static {
+        instancia = new PrinterConfiguration();
+    }
+    
+    public static PrinterConfiguration getInstancia() {
+        return instancia;
+    }
+
+    //thread safe e on demand
+    public static synchonized PrinterConfiguration getInstancia() {
         if (instancia == null) { // unsafe e on demand
             instancia = new PrinterConfiguration();
         }
@@ -985,7 +1004,7 @@ public class OrderController {
 
 
 ```
-
+// economiza de recursos
 #### Singleton - Basico
 
 #### Singleton - Thread Safe
@@ -994,19 +1013,308 @@ public class OrderController {
 
 #### Singleton - Eager
 
+====
+
 ### Strategy - comportamental
 
 ### Template Method - comportamental
 
+```java
+//intermec, zebra, argox
+class Printer {
+
+    // v0
+    public void print(String commands, String printerName) {
+        // codigo
+        String encoded = encode(commands)
+        sendToPrinter()
+        if (printerName.equals("intermec")) {
+            // serial
+            serial(encoded);
+        }
+        else if (printerName.equals("argox")) {
+            // usb
+            usb(encoded);
+        }
+        else if (printerName.equals("zebra")) {
+            // network
+            network(encoded);
+        }
+        else if (printerName.equals("CHINA")) {
+            // BT
+            bt(encoded);
+        }
+
+        // finalizacao (com popups)
+        //tratamento de erros
+    }
+
+    // v1
+    private int sendToPrinter(String encoded, String printerName) {
+        int labels = 0
+        if (printerName.equals("intermec")) {
+            // serial
+            labels = serial(encoded);
+            // 
+        }
+        else if (printerName.equals("argox")) {
+            // usb
+            labels = usb(encoded);
+        }
+        else if (printerName.equals("zebra")) {
+            // network
+            labels = network(encoded);
+        }
+        else if (printerName.equals("CHINA")) {
+            // BT
+            labels = bt(encoded);
+        }
+        return labels;
+    }
+
+    public void print(String commands, String printerName) {
+        // codigo
+        String encoded = encode(commands)
+        int count = sendToPrinter(encoded, printerName)
+        //quantas etiquetas foram impressas
+        // finalizacao (com popups)
+        //tratamento de erros
+    }
+
+}
+
+//v2
+abstract class Printer {
+
+    abstract int sendToPrinter(String encoded);
+
+    public void print(String commands) {
+        // codigo
+        String encoded = encode(commands)
+        int count = this.sendToPrinter(encoded)
+        //quantas etiquetas foram impressas
+        // finalizacao (com popups)
+        outroMetodoAbstrato()
+        //tratamento de erros
+    }
+}
+
+class Intermec extends Printer {
+    int sendToPrinter(String encoded) {
+        // serial
+        return serial(encoded);
+    }
+}
+
+class Zebra extends Printer {
+    int sendToPrinter(String encoded) {
+        // network
+        return network(encoded);
+    }
+}
+
+class Argox extends Printer {
+    int sendToPrinter(String encoded) {
+        // usb
+        return usb(encoded);
+    }
+}
+
+class China extends Printer {
+    int sendToPrinter(String encoded) {
+        // BT
+        return BT(encoded);
+    }
+}
+// template method
+
+// usage com 
+interface i = new PrinterFactory.create(printerName);
+
+new PrinterFactory.create(printerName).print(commands)
+
+// reuso do BT
+BT(arquivo) nao da pra fazer com template
+
+//strategy
+
+interface Sender {
+    int send(String encoded);
+} 
+
+class Printer {
+
+    private Sender sender;
+
+    private void asciiToChar() {..do something};
+
+    public void print(String commands) {
+        // codigo
+        String encoded = encode(commands)
+        int count = this.sender.send(encoded)
+        //quantas etiquetas foram impressas
+        // finalizacao (com popups)
+        outroMetodoAbstrato()
+        //tratamento de erros
+    }
+}
+
+class Intermec implements Sender {
+    int send(String encoded) {
+        // serial
+        return serial(encoded);
+    }
+}
+
+class Zebra implements Sender {
+    int send(String encoded) {
+        // network
+        return network(encoded);
+    }
+}
+
+class Argox implements Sender {
+    int send(String encoded) {
+        // usb
+        return usb(encoded);
+    }
+}
+
+class China implements Sender {
+    int send(String encoded) {
+        // BT
+        return BT(encoded);
+    }
+}
+
+// reuso BT
+new Printer(new Zebra()).print(commands);
+new China().send(banana)
+```
+
 ### Strategy vs Template Method
+
+template method se baseia na heranca, reusa funcoes da classe pai
+
+strategy é baseado em composicao, tem melhor reuso, mas precisa que as implementacoes sejam bem separadas.
+
+algoritmos com a seguinte estrutura
+funcao () {
+    //codigo q da pra reusar
+    //codigo q da pra reusar
+
+    //nao da pra reusar A
+    //nao da pra reusar B
+    //nao da pra reusar C
+
+    //codigo q da pra reusar
+    //codigo q da pra reusar
+}
+
+### padroes que delegam comportamento para uma dependencia interna:
+
+// potencializar reuso
+
+algoritmos com a seguinte estrutura
+funcao () {
+    //nao da pra reusar A
+    //nao da pra reusar B
+    //nao da pra reusar C
+
+    //codigo q da pra reusar
+    //codigo q da pra reusar
+}
+
+funcao () {
+    //codigo q da pra reusar
+    //codigo q da pra reusar
+
+    //nao da pra reusar A
+    //nao da pra reusar B
+    //nao da pra reusar C
+}
 
 ### Adapter (Wrapper) - estrutural
 
+refactory / temporario
+
+class PrinterV2 {
+    int print(Page page);
+}
+
+class PrinterV1 {
+    int print(String commands, String printerName);
+}
+
+class PrinterAdapterV2ParaV1 extends PrinterV1 {
+
+    private PrinterV2 parent;
+
+    @Override
+    int print(String commands, String printerName) {
+        page new Page(commands, printerName)
+        return this.parent(page)
+    }
+
+}
+
+v1 = new PrinterV1();
+framework(v1);
+
+// retrocompatibilidade
+
+v1 = new PrinterAdapterV2ParaV1(new PrinterV2());
+framework(v1);
+
+
+// antecipar o uso antes de terminar o refactory
+class PrinterAdapterV2ParaV1 extends PrinterV2 {
+
+    private PrinterV1 parent;
+
+    @Override
+    int print(Page page) {
+        return this.parent.print(page.commands, page.printerName);
+    }
+
+    @Override
+    int print(String commands, String printerName) {
+        page new Page(commands, printerName)
+        return this.parent(page)
+    }
+
+}
+
+v2 = new Printerv2();
+webpagesV2(v2)
+
 ### Proxy - estrutural
+
+// economia de recurso ---> deixar lazy, on demand
+
+class DBConnection {
+    public Statement createStatement();
+}
+
+class DBConnectionProxy extends DBConnection {
+
+    private DBConnection parent = null;
+
+    @Override
+    public Statement createStatement() {
+        if (parent == null) {
+            parent = new DBConnection();
+        }
+        return this.parent.createStatement();
+    };
+
+}
 
 ### Decorator (for behavior) - estrutural
 
 ### Adapter vs Decorator vs Proxy
+
+
 
 ### Behavioral Patterns / Iterator | what about Generator?
 
