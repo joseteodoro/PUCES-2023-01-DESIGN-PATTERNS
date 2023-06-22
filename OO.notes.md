@@ -1310,21 +1310,783 @@ class DBConnectionProxy extends DBConnection {
 
 }
 
+// proxy como cache com classes
+
+```java
+class Config {
+    public boolean isDebugEnabled() {
+        readFromFile('[debug]'); // simulando operacao de IO custosa
+    }
+}
+
+class CacheableConfig extends Config {
+
+    private Config parent;
+
+    private Map<String, boolean> cache = new WeakHashMap<>();
+
+    @Override
+    public boolean isDebugEnabled() {
+        if (!cache.has("debug")) {
+            boolean result = parent.isDebugEnabled(); // simulando operacao de IO
+            cache.put("debug", result);
+            setTimeout(300* 1000, () -> {
+                cache.remove("debug");
+            })
+        }
+        return cache.get("debug");
+    }
+
+    public void purge() {
+        cache.clear();
+    }
+
+}
+
+
+//usage
+
+Config cfg = new CacheableConfig(new Config());
+cfg.isDebugEnabled() // le o disco e salva no cache
+cfg.isDebugEnabled() // le o cache
+cfg.isDebugEnabled() // le o cache
+cfg.isDebugEnabled() // le o cache
+cfg.isDebugEnabled() // le o cache
+cfg.isDebugEnabled() // le o cache
+
+//purge
+LRU // mais recentes utilizados
+LCU // mais comumentes utilizados
+
+java // LinkedHashMap()
+//removeEldestEntry(Map.Entry<K,V> eldest)
+//Returns true if this map should remove its eldest entry.
+
+Map<string, string>, Dictionary<string, string> ...
+WeakMap // linguagens que possuem garbage collector
+// gc pode recolher o que esta aqui dentro se precisar
+
+
+Supplier<T> // T é o tipo do seu cache
+
+T Cacheable<T>(Supplier<T> sup, String key) {
+    if (!cache.has(key)) {
+            boolean result = sup.get()
+            cache.put(key, result);
+            setTimeout(300* 1000, () -> {
+                cache.remove(key);
+            })
+        }
+        return cache.get(key);
+    return 
+}
+
+
+delegate Supplier T ();
+
+T Cacheable<T>(Supplier<T> sup, String key) {
+    if (!cache.has(key)) {
+            boolean result = sup.get()
+            cache.put(key, result);
+            setTimeout(300* 1000, () -> {
+                cache.remove(key);
+            })
+        }
+        return cache.get(key);
+    return 
+}
+
+//usage
+public boolean isDebugEnabled() {
+    return Cacheable(
+        () -> new Config().isDebugEnabled(),
+        '[debug]'
+    )
+}
+return 
+
+```
+// cache como proxy no python
+```python
+import functools
+def lru_cache(fn): // curried function
+    def wrapped(**args, **kargs):
+        if to_string(args, kargs) not in cache:
+            cache[to_string(args, kargs)] = fn(args, kargs)
+
+        return cache[to_string(args, kargs)]
+
+@lru_cache
+def is_debug():
+    return readFile('[debug]')
+
+```
+
 ### Decorator (for behavior) - estrutural
+
+```html
+<b><s><p>banana</p></s></b>
+```
+
+Tag t = new B(new S(new P("banana")))
+t.print() // => '<b><s><p>banana</p></s></b>'
+
+```java
+interface Tag {
+    public String print();
+}
+
+// terminador
+class P implements Tag {
+    private String content;
+
+    public String print() {
+        return "<p>" + content + "</p>";
+    }
+}
+
+class B implements Tag {
+    private Tag next;
+
+    public String print() {
+        return "<b>" + next.print() + "</b>";
+    }
+}
+
+class I implements Tag {
+    private Tag next;
+
+    public String print() {
+        return "<i>" + next.print() + "</i>";
+    }
+}
+```
+
+
+```html
+<b><p>banana</p></b>
+```
+
+```html
+<i><p>banana</p></i>
+```
+
+```html
+<em><p>banana</p></em>
+```
+
+```java
+class Em implements Tag {
+    private Tag next;
+
+    public String print() {
+        return "<em>" + next.print() + "</em>";
+    }
+}
+```
+
+```java
+class XMLExporter implements Exporter {
+
+    public String export(Report repo) {
+        return ..."";
+    }
+}
+
+class PDFExporter implements Exporter {
+
+    private Exporter next;
+
+    public String export(Report repo) {
+        return new ToPDF(next.export(repo));
+    }
+}
+
+class Em implements Tag {
+    private Tag next;
+
+    public String print() {
+        return "<em>" + next.print() + "</em>";
+    }
+}
+```
+
+```python
+
+class P:
+    def render():
+        if temI
+            //
+            if temB
+                //
+            
+            else
+
+        if temB
+            if temI
+
+            else
+
+        if temS
+            if temB
+                if temI
+
+                else
+            else
+
+```
+
+<!-- /calculando preco com varias variaveis -->
+```java
+class Calculator implements  {
+    public float calculaValorACobrar(Cliente cliente, Pedido pedido) {
+        float total = pedido.getTotal();
+        if (temFrete(cliente)) {
+            total += calculaFrete(pedido, cliente)
+        }
+        if (temCupom(cliente)) {
+            total += calculaCupom(pedido, cliente)
+        }
+        if (temImposto(cliente)) {
+            total += calculaImposto(pedido, cliente)
+        }
+        return total;
+    }
+}
+```
+
+// reusando blocos com precos
+```
+public interface Calc {
+    public float calculaValorACobrar(Cliente cliente, Pedido pedido);    
+}
+
+class Calculator implements Calc {
+    public float calculaValorACobrar(Cliente cliente, Pedido pedido) {
+        return pedido.getTotal();
+    }
+}
+
+class ComFrete implements Calc  {
+    private Calc next;
+
+    public float calculaValorACobrar(Cliente cliente, Pedido pedido) {
+        if (temFrete(cliente)) {
+            return next.calculaValorACobrar(Cliente cliente, Pedido pedido) - calculaFrete(pedido, cliente);
+        }
+        return return next.calculaValorACobrar(Cliente cliente, Pedido pedido);
+    }
+}
+
+// usage sempre posso criar com todos
+
+new ComImposto(new ComFrete(new Calculator()));
+
+// sem os condicionais
+class ComFrete implements Calc  {
+    private Calc next;
+
+    public float calculaValorACobrar(Cliente cliente, Pedido pedido) {
+        return next.calculaValorACobrar(Cliente cliente, Pedido pedido) - calculaFrete(pedido, cliente);
+    }
+}
+
+// factory pra decidir o que criar
+Calc c = factory.create(cliente)
+
+
+```
+// agora eu quero fidelidade na cobranca tb
+
+// decorator
+
+quadros (tela - desenho, moldura, vidro, ganchos q seguram na parede)
+minimo necessario - tela
+
+tela + moldura = quadro
+tela + moldura + vidro = quadro
+
+if (vidro)
+if (moldura)
+if (moldura && vidro)
+
+
+moldura + vidro + ganchos
+
+<i><b><p>banana</p></b></i>
+
+
+
+#### exemplo melhor de decorator
+
+- seu software pode receber um json
+
+```json
+{
+    "pedido": 123456789,
+    "nome": "jteodoro",
+    "endereco-entrega": "av. batatinha, 234",
+    "cep": "02304-000"
+}
+```
+
+```separado por linhas
+123456789
+jteodoro
+av. batatinha, 234
+02304-000
+```
+
+```base64
+eyJwZWRpZG8iOiAxMjM0NTY3ODksIm5vbWUiOiAianRlb2Rvcm8iLCJlbmRlcmVjby1lbnRyZWdh
+IjogImF2LiBiYXRhdGluaGEsIDIzNCIsImNlcCI6IjAyMzA0LTAwMCJ9Cg==
+```
+
+```zip
+��Z����`��� �UA}f�j{ƞ�瘚ϓ��1s�"�ާ� �i�79�ӆ�Ote:##Ú�8�Ah�dD
+```
+
+zip + base64 = '77+977+9Wu+/ve+/ve+/ve+/vWDvv73vv73vv70g77+9VUF9Zu+/vWp7xp7vv73nmJrP++/ve+/vTFz77+9Iu+/vd6n77+9IO+/vWnvv703Oe+/vdOG77+9T3RlOiMjw5rvv70477+9QWjvv71kRAo='
+
+
+input pode ser qqer desses:
+
+json + base64
+lines + base64
+json + zip + base64
+lines + zip + base64
+xml + base64
+
+
+output: zpl
+
+mas eu imprimo uma etiqueta a partir do JSON. entao preciso transformar qualquer dessas cosias em json.
+
+```typescript
+
+interface Order {
+    "pedido": number;
+    "nome": string;
+    "endereco-entrega": string;
+    "cep": string;
+}
+
+const invokeMyThermalPrinter = (commands: ZPL) : void {
+    // envia ZPL para impressora
+}
+
+const format = (content: string) : ZPL {
+    // linguagem de comandos que a impressora entende
+    return `
+^XA
+^FO40,25^FS
+^LH200,100
+^CF0,30
+^FO35,13^FD{${content.nome}}^FS
+^FO25,13^FD{${content.endereco}}^FS
+^PQ1
+^XZ
+`
+}
+
+const stringToOrder = (content: string): Order {
+    return JSON.parse(content)
+}
+
+// recursao ao infinito e alem
+
+// content zipado print(content_zipado) => print(content_unziped) => print(content_lines_to_json)
+// loop infinito => stack overflow
+const print = (content: string) : void {
+    if (isZip(content)) {
+        // unzip
+        return print(unzip(content));
+    }
+    if (isBase64(content)) {
+        // decode
+        return print(decode(content));
+    }
+    if (IsLineBasedString(content)) {
+        // decode
+        return print(createJSON(content));
+    }
+    if (IsXML(content)) {
+        // decode
+        return print(unmarshal(content));
+    }
+
+    Order order = stringToOrder(content)
+    return invokeMyThermalPrinter(format(order))
+}
+```
+
+```typescript
+
+const terminator = function (content: string) : void;
+
+// sempre recebo um json na string
+// print é um terminator
+const print = (content: string) : void {
+    Order order = stringToOrder(content)
+    return invokeMyThermalPrinter(format(order))
+}
+
+//decorator
+// terminator(terminator)
+const printZipped = (next: terminator) : any {
+    // return new funtion
+    // terminator
+    return (content: string) : void {
+        const unzipedContent = unzip(content)
+        return next(unzipedContent)
+    }
+}
+
+const printBase64 = (next: terminator) : any {
+    // return new funtion
+    // terminator
+    return (content: string) : void {
+        const decodedContent = decode(content)
+        return next(decodedContent)
+    }
+}
+
+const printLines = (next: terminator) : any {
+    // return new funtion
+    // terminator
+    return (content: string) : void {
+        const jsonContent = linesToJsonLike(content)
+        return next(jsonContent)
+    }
+}
+
+const printXML = (next: terminator) : any {
+    // return new funtion
+    // terminator
+    return (content: string) : void {
+        const unmarshledContent = xmlToJsonLike(content)
+        return next(unmarshledContent)
+    }
+}
+
+// (content: string) : void
+print(meuConteudo)
+
+// curry
+// (content: string) : void
+const fn1 = printZipped(print)
+fn1(meuConteudo) --- json + zip
+
+const fn2 = printBase64(print)
+fn2(meuConteudo) -- json + base64
+
+const fn3 = printBase64(printZipped(print))
+fn3(meuConteudo) -- json + zip + base64
+
+const fn4 = printBase64(printZipped(print))
+fn4(meuConteudo) -- json + base64 + zip
+
+printLine(print)
+
+const fn5 = printBase64(printZipped(printLine(print)))
+fn5(meuConteudo)
+
+// return (content: string) : void
+const factory = (content: string): terminator {
+    let fn = print;
+    if (isZip(content)) {
+        fn = printZipped(fn)
+    }
+    if (isBase64(content)) {
+        fn = printBase64(fn)
+    }
+    if (IsLineBasedString(content)) {
+        // decode
+    }
+    return fn
+}
+
+const imprimir = factory(meuConteudo)
+imprimir(meuConteudo)
+
+```
 
 ### Adapter vs Decorator vs Proxy
 
+// pedaco de algoritmo que eu delego pra alguem
+// os objetos sao do mesmo tipo
 
+// adapter -- retrocompatibilidade (refactory, evolucao de versoes)
+
+//proxy -- economia de recursos
+
+// decorator -- quando temos muitos IFs aninhados e compostos
 
 ### Behavioral Patterns / Iterator | what about Generator?
 
-### Creational Patterns / Builder
+// sequence bancos de dados?
+// cada vez q chama ela te da outro valor
+// pk: 1, pk: 2, pk: 3 ....
+// um conjunto de valores que precisa ser processado / encaminhado pra frente
 
-### Creational Patterns / Copy on constructor
+sequence / generator
+// back pressure ()
+// seguro pra concorrencia (acessando um recurso que nao é segura pra concorrencia)
+
+```javascript
+const arrayNameFiles = ["f1.txt", "f12.txt","f11.txt", "f51.txt"]
+// iterator
+arrayNameFiles.forEach(f => {
+    fs.readFileSync(f)
+    // faco mais algo
+})
+// iterators
+// for Each, for in, stream, select / where
+
+const ids = []
+// thread diferente
+ids.push(idJteodoro)
+// thread diferente
+ids.push(idFabricio)
+// thread diferente
+ids.push(idPietra)
+
+// !!race condition
+
+// removendo race conditions com generators
+gen = generator(ids)
+// thread diferente
+gen(idJteodoro)
+// thread diferente
+gen(idFabricio)
+// thread diferente
+gen(idPietra)
+
+// semaforo, controle de concorrencia + backpressure
+// .net, js, stream (criar a partir daqui), python
+
+```
+
+```c#
+Factory.CreateBy(type) // factory esconde complexidade
+// if Base64
+// if PlainText
+// if zip
+// tudo fica escondido
+```
+
+```
+objectExistente.Build()
+objectExistente.Clone()
+// construo um objeto a partir de uma configuracao ja definida
+
+Builder, Prototype, CoC
+
+// tem uma funcao que a partir de uma configuracao (dados de um objeto) conseguem criar um
+objeto novo
+```
+
+// ideia central: ter uma configuração defina pra criacao de um objeto
 
 ### Creational Patterns / Prototype
 
-### Prototype vs Builder
+// pra que serve: economizar recurso custoso de se carregar
+//                  pra gerar concorrencia segura
+//                  potencializa abstracao
+
+```java
+public class User {
+    
+    private DBAccess db;
+    private Image photo; // custoso de carregar do disco, ou precisa pegar via internet
+    private List<Address> addresses;
+
+    // copia rasa
+    public User shallowClone() {
+        User us = new User();
+        us.db = new DBAccess()
+        us.photo = this.photo;
+        us.addresses = this.addresses;
+        return us;
+    }
+
+    // copia profunda
+    // so mantem tipos primitivos
+    public User deepClone() {
+        User us = new User();
+        us.db = new DBAccess()
+        us.photo = new Image(this.photo);
+        us.addresses = new List<>(this.addresses);
+        return us;
+    }
+}
+
+public class Admin extends User {
+    @Overrride
+    public Admin deepClone() {} // faz outra coisa
+
+};
+public class Guest extends User {};
+public class Customer extends User {};
+public class Employee extends User {};
+
+// shallow copy (copia rasa)
+// usage
+User copy = userJose.clone()
+copy.getImage().clear() // area compartilhada de escrita
+copy.getAddresses().clear() // area compartilhada de escrita
+
+// reuso de recurso
+
+// deep copy (copia profunda)
+// usage
+User copy = userJose.clone()
+copy.getImage().clear() // area isolada
+copy.getAddresses().clear() // area isolada
+
+
+// suponha que user tem metodos nao sao threadsafe (seguros pra rodar de modo concorrente)
+List<String> addresses = user.addresses;
+addresses.sort() // ordenacao in-place
+addresses.find()
+
+FindFirstAlpha(u => {
+    u.addresses.sort();
+    return u.addresses.first();
+})
+
+users.stream().map(FindFirstAlpha) // problema de concorrencia
+users.stream().map(u => u.deepClone()).map(FindFirstAlpha) // nao tem problema de concorrencia
+
+new Guest().deepClone() ==> <Guest>
+new Admin().deepClone() ==> <Admin>
+new User().deepClone() ==>  <User>
+// oq ue eu quer é: obj.deepClone() e me retornar alguem
+
+// nao precisamos fazer o seguinte:
+    if admin
+    new Admin(u)
+    if user
+    new User(u)
+    if guest
+    new Guest(u)
+```
+
+### Creational Patterns / Copy on constructor
+
+```java
+public class User {
+    private DBAccess db;
+    private Image photo; // custoso de carregar do disco, ou precisa pegar via internet
+    private List<Address> addresses;
+
+    public User() {}
+}
+
+public class User {
+    private DBAccess db;
+    private Image photo; // custoso de carregar do disco, ou precisa pegar via internet
+    private List<Address> addresses;
+
+    public User() {}
+}
+
+public class SU extends User {
+
+    public SU() {}
+
+    public SU(User existent) {
+        this.setPhoto(new Image(existent.getPhoto()));
+        this.setAddresses(new List<>(existent.getAddresses()));
+    }
+}
+
+public class Guest extends User {};
+public class Customer extends User {};
+public class Employee extends User {};
+
+//usage
+users.stream().map(u => new SU(u))....
+```
+
+### Creational Patterns / Builder
+// classe tem muitos campos, consigo criar valores default para classes com muitos campos
+// simplificar chamada
+//  chamada fluente
+
+```java
+public class UserBuilder {
+    private DBAccess db = CentralConfig.getInstance().readOnlyAccess(); // db somente leitura por default
+    private Image photo = GenericImage.getInstance(); // imagem default com a silhueta de um usuario
+    private List<Address> addresses = new List<>();
+
+    // demais withs
+
+    public UserBuilder withAddresses(Address ... args) {
+        this.addresses = new LinkedList<>(args);
+        return this;
+    }
+
+    public User build() {
+        // crio o objeto que me interessa
+        return new User(db, photo, addresses);
+    };
+}
+
+// usage
+User us = new UserBuilder()
+            .withDB(algumDB)
+            .withImage(batatinha)
+            .withAddresses(homeAddress, workAdress)
+            .build();
+
+User us = new UserBuilder().build();
+
+// Lib lombok
+// gera codigo do builder pra vc
+
+//usando lombok
+
+@Builder
+public class Guest extends User {
+
+};
+
+// ultimo caso
+// seu codigo define o builder
+// mas nao é seu codigo que cria o objeto
+// builder mais com cara de DTO (so os dados pra criar o objeto de verdade)
+
+// caller 
+UserBuilder builder = new UserBuilder()
+            .withDB(algumDB)
+            .withImage(batatinha)
+            .withAddresses(homeAddress, workAdress);
+
+// faria suas chamadas internas
+invokeSeuCodigo(builder)
+
+// da pra criar varias copias
+builder.build()
+builder.build()
+builder.build()
+builder.build()
+```
+
+### Prototype vs Builder vs Copy on constructor
+
+// prototype (sempre trabalha dentro da mesma classe)
+- economizar recurso
+- garantir seguranca pra concorrencia
+- esconder o tipo atras uma assinatura
+
+// copy on constructor (trabalha com classes diferentes)
+- criar um objeto em outra classe completamente diferente
+- ajuda o SRP por nao dispersar codigo de construcao pelo software
+
+// builder
+- facilitar e simplificar a chamada (valores default, codigo fluente)
+- quem cria a configuracao (dados do objeto) nao é quem dá o new no objeto
 
 ### Creational Patterns / Flyweight
 
@@ -1333,6 +2095,5 @@ class DBConnectionProxy extends DBConnection {
 ### Prototype vs Object Pool vs Flyweight
 
 ### Behavioral Patterns / Command
-
 
 ### and more
