@@ -2090,10 +2090,130 @@ builder.build()
 
 ### Creational Patterns / Flyweight
 
+- economizar recurso (seja tempo de carga, seja de memoria)
+- Muito parecido com prototype
+
+```java
+public class User {
+    private DBAccess db;
+    private Proxy<Image> CompanyProfilephoto; // custoso de carregar do disco, ou precisa pegar via internet
+}
+
+public class OrderReport {
+    private Proxy<Image> CompanyProfilephoto; // custoso de carregar do disco, ou precisa pegar via internet
+}
+
+public class ResourceRegister {
+    private Map<String, Proxy<Image>> proxies; // proxy como cache
+
+    public ResourceRegister getInstance() {} // singleton
+
+    public get(String companyName) {
+        if (!proxies.has(companyName)) {
+            proxies.put(companyName, new Proxy<Image>(File.load(companyname+".png")))
+        }
+        return proxies.get(companyName);
+    }
+}
+
+// User user = new user(); // image1
+// OrderReport orderReport = new OrderReport(); //image1
+orderReport.CompanyProfilephoto = ResourceRegister.getIntance().get(company) // somente leitura
+user.CompanyProfilephoto = ResourceRegister.getIntance().get(company) // somente leitura
+```
+
+- flyweight trabalha com tipos de diferentes, classes diferentes e compartilha recursos entre elas.
+- diferenca: forca para que todos os objetos compartilhados sejam somente leitura;
+
 ### Creational Patterns / Object pool
+
+- reutilizar recursos escassos (numero fixo)
+- evita conflito de concorrencia
+- garantir que todo mundo tenha o seu de executar
+- controla a quantidade e inicializacao desses objetos
+
+// pool de celulares numa geladeira para realizacao de testes
+```
+[jose,                               Bruno]
+[teodoro,  Elinaldo, ]
+[iphone15, iphoneSE, O, O, O, O,   Android12]
+```
+
+// pool conexoes de bancos dados (limitadas!)
+- conexao de bancos de dados sempre prontas;
+- controlamos o numero maximo de conexoes abertas;
+- economizar recurso pra nao deixar sempre o maximo de conexoes abertas;
+
+```
+{
+    minConnections: 2,
+    maxConnections: 10,
+    maxTimeIdle: "60 seconds"
+}
+```
+
+pool = [pg1, pg2(elinaldo), p3, ... p10];
+
+// pool de impressoras (spool.exe)
+- cria uma fila pra imprimir uma pessoa de cada vez
 
 ### Prototype vs Object Pool vs Flyweight
 
-### Behavioral Patterns / Command
+Prototype:
+
+- economiza recurso custoso de se instanciar ou que consome muita memoria;
+- smpre clona o mesmo tipo de objeto
+- RW, R (de preferencia, somente leitura)
+
+Flyweigth:
+
+- economiza recurso custoso de se instanciar ou que consome muita memoria;
+- compartilha o recurso em classes diferentes;
+- somente leitura (muitas classes podem mexer na mesma variavel compartilhada, por isso é mais saudavel manter somente leitura)
+- register de cache / proxy
+
+Object Pool:
+
+- economiza recurso custoso;
+- recurso que é escasso;
+- controla a concorrencia, mas tambem garante tempo de execucao pra todo mundo;
+
+## Behavioral Patterns / Command
+
+// muito usado pra enviar comandos pra devices antigos;
+
+```js
+user us = new User({name: 'jteodoro'});
+us.create();
+
+const command = {
+    'action': 'user-created',
+    'params': {
+        'name': 'jteodoro'
+    }
+}
+```
+
+REST:
+    POST, PUT
+    GET,
+    DELETE
+
+## Behavioral Patterns / Observer
+
+## Distributed Systems / Messaging and event source
+
+## Distributed Systems / Pub & Sub
+
+## Distributed Systems / Saga
+
+
+## Structural Patterns / Bridge
+
+## Structural Patterns / Facade
+
+## Behavioral Patterns / Chain of Responsibility (CoR)
+
+## Behavioral Patterns / Visitor
 
 ### and more
